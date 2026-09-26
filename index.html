@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Journal de Trading Pro - Android</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<meta name="theme-color" content="#1A1512">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TJ Pro">
+<style>
+:root{
+  --bg:#1A1512;
+  --panel:#261F1A;
+  --border:#3D312A;
+  --text:#FDF8F5;
+  --muted:#B5A496;
+  --gain:#34D399;
+  --loss:#F87171;
+  --accent:#F59E0B;
+  --touch-target: 44px;
+}
+[data-theme="light"]{
+  --bg:#F7F5F2;
+  --panel:#FFFFFF;
+  --border:#E6DFD5;
+  --text:#261F1A;
+  --muted:#8C7B6E;
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color: transparent;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;line-height:1.4;-webkit-text-size-adjust:100%;overflow-x:hidden;}
+
+.wrap{width:100%;max-width:100%;margin:0 auto;padding:12px 14px 90px;overflow-x:hidden;}
+
+.login-screen{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg);z-index:1000;flex-direction:column;justify-content:center;align-items:center;padding:16px;}
+.login-screen.show{display:flex;}
+.login-box{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:28px 20px;text-align:center;max-width:340px;width:100%;box-shadow:0 8px 24px rgba(0,0,0,0.4);}
+.login-box h2{color:var(--accent);margin:0 0 12px 0;font-size:1.4rem;}
+.auth-tab input{width:100%;padding:12px;margin:8px 0;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:1rem;}
+.sync-status{display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--panel);border:1px solid var(--border);border-radius:8px;font-size:0.7rem;color:var(--muted);}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--loss);}
+.sync-dot.online{background:var(--gain);}
+
+.user-badge{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--panel);border-radius:12px;font-size:0.85rem;margin-bottom:14px;border:1px solid var(--border);}
+.top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.top-bar h1{font-size:1.25rem;font-weight:700;color:var(--accent);margin:0;}
+.top-bar-right{display:flex;gap:8px;align-items:center;}
+button{background:var(--panel);color:var(--text);border:1px solid var(--border);padding:10px 14px;border-radius:10px;cursor:pointer;font-size:0.85rem;font-weight:600;min-height:var(--touch-target);display:inline-flex;align-items:center;justify-content:center;transition:all 0.2s ease;}
+button:active{transform:scale(0.97);}
+button.primary{background:var(--accent);color:#1A1512;border:none;font-weight:700;width:100%;margin-top:12px;padding:14px;font-size:1rem;}
+.btn-auth{background:var(--accent);color:#1A1512;border:none;font-weight:700;padding:14px;font-size:1rem;border-radius:10px;cursor:pointer;width:100%;margin-top:14px;}
+
+.profile-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px;}
+.profile-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.profile-field{display:flex;flex-direction:column;gap:6px;font-size:0.75rem;font-weight:500;color:var(--muted);}
+.profile-field input{background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:10px;font-size:1rem;min-height:44px;}
+
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;}
+.stat{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;}
+.stat .num{font-size:1.25rem;font-weight:700;color:var(--accent);}
+.stat .label{color:var(--muted);font-size:0.65rem;margin-top:2px;text-transform:uppercase;letter-spacing:0.5px;}
+.gain{color:var(--gain);}.loss{color:var(--loss);}
+
+form.add{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:20px;}
+form.add h3{margin-top:0;font-size:1.1rem;font-weight:600;color:var(--accent);margin-bottom:14px;}
+.form-grid{display:grid;grid-template-columns:1fr;gap:12px;}
+form.add label{display:flex;flex-direction:column;font-size:0.75rem;font-weight:500;color:var(--muted);gap:6px;}
+form.add input,form.add select,form.add textarea{background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:12px;font-size:1rem;font-family:inherit;min-height:48px;}
+form.add input[type="date"] { color-scheme: dark; color: var(--text); background: var(--bg); }
+[data-theme="light"] form.add input[type="date"] { color-scheme: light; }
+form.add .full{grid-column:1 / -1;}
+.preview-box{background:rgba(245,158,11,0.08);border:1px dashed var(--accent);border-radius:10px;padding:12px;margin-top:14px;font-size:0.9rem;display:flex;justify-content:space-around;color:var(--text);align-items:center;text-align:center;}
+.filter-bar{display:flex;gap:10px;margin-bottom:14px;flex-direction:column;}
+.filter-bar input,.filter-bar select{flex:1;background:var(--panel);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:12px;font-size:1rem;min-height:48px;}
+
+.mobile-card-container{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+
+.trade-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;position:relative;box-shadow:0 2px 6px rgba(0,0,0,0.15);}
+.trade-card-header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding-bottom:8px;}
+.trade-card-instrument{font-weight:700;font-size:1rem;color:var(--accent);}
+.trade-card-badge{font-size:0.7rem;padding:3px 8px;border-radius:6px;font-weight:700;text-transform:uppercase;}
+.badge-long{background:rgba(52,211,153,0.15);color:var(--gain);}
+.badge-short{background:rgba(248,113,113,0.15);color:var(--loss);}
+
+.trade-card-body{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:0.8rem;color:var(--muted);}
+.trade-card-body span strong{color:var(--text);}
+.trade-card-footer{display:flex;justify-content:space-between;align-items:center;margin-top:6px;padding-top:8px;border-top:1px dashed var(--border);}
+.trade-card-pnl{font-size:1rem;font-weight:700;}
+.trade-card-actions{display:flex;gap:8px;}
+
+/* Suppression totale de l'affichage table PC */
+.tablewrap{display:none !important;}
+
+.del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem;padding:8px;min-width:40px;min-height:40px;display:inline-flex;align-items:center;justify-content:center;}
+.del:hover,.edit-btn:hover{color:var(--accent);}
+.empty{color:var(--muted);padding:40px 0;text-align:center;font-size:0.95rem;}
+
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);z-index:2000;justify-content:center;align-items:center;padding:16px;}
+.modal.show{display:flex;}
+.modal-content{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px;max-width:540px;width:100%;max-height:85vh;overflow-y:auto;}
+.modal-content h3{color:var(--accent);margin-top:0;}
+.modal-info{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:0.85rem;margin-bottom:14px;}
+.modal-info div{background:var(--bg);padding:10px;border-radius:8px;border:1px solid var(--border);}
+.modal-img{width:100%;max-height:280px;object-fit:contain;border-radius:8px;margin-top:8px;background:#000;cursor:zoom-in;}
+a{color:var(--accent);text-decoration:none;}
+a:hover{text-decoration:underline;}
+
+.avatar-wrap{position:relative;flex-shrink:0;}
+.user-avatar-img{width:34px;height:34px;border-radius:50%;object-fit:cover;cursor:zoom-in;display:block;}
+.avatar-wrap-lg{width:64px;height:64px;}
+.profile-avatar-img{width:64px;height:64px;border-radius:50%;object-fit:cover;cursor:zoom-in;display:block;border:1px solid var(--border);}
+.profile-avatar-fallback{width:64px;height:64px;border-radius:50%;background:var(--accent);color:#1A1512;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:1.4rem;cursor:pointer;}
+.avatar-edit{position:absolute;bottom:-2px;right:-2px;width:26px;height:26px;background:var(--panel);border:1px solid var(--border);color:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;}
+.profile-photo-row{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+.profile-photo-actions{display:flex;flex-direction:column;gap:8px;}
+.trade-photo-preview-wrap{display:none;flex-direction:column;align-items:flex-start;gap:8px;margin-top:8px;}
+.trade-photo-preview{max-width:140px;max-height:140px;border-radius:8px;border:1px solid var(--border);cursor:zoom-in;display:block;object-fit:cover;}
+
+.lightbox{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:3000;justify-content:center;align-items:center;padding:16px;overflow:hidden;}
+.lightbox.show{display:flex;}
+.lightbox img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;cursor:zoom-in;transition:transform 0.15s ease;touch-action:pinch-zoom;user-select:none;}
+.lightbox-close{position:fixed;top:16px;right:16px;background:rgba(0,0,0,0.6);color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:1.2rem;cursor:pointer;z-index:3001;display:flex;align-items:center;justify-content:center;}
+.lightbox-hint{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);color:var(--muted);font-size:0.7rem;background:rgba(0,0,0,0.6);padding:6px 12px;border-radius:20px;text-align:center;}
+</style>
+
+<script>
+  window.cloudReady = false;
+</script>
+<script type="module">
+  async function initFirebase() {
+    try {
+      const [appMod, authMod, fsMod] = await Promise.all([
+        import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"),
+        import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"),
+        import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js")
+      ]);
+
+      const { initializeApp } = appMod;
+      const { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, browserLocalPersistence, setPersistence } = authMod;
+      const { getFirestore, doc, setDoc, getDoc, onSnapshot } = fsMod;
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyDJsZW4xE690Q4pvqQT6sBnU-cOieG8YRI",
+        authDomain: "journal-tradin.firebaseapp.com",
+        projectId: "journal-tradin",
+        storageBucket: "journal-tradin.firebasestorage.app",
+        messagingSenderId: "893977238980",
+        appId: "1:893977238980:web:ce09d59b6a210605c75891",
+        measurementId: "G-Z6C1H2CT69"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      await setPersistence(auth, browserLocalPersistence).catch(() => {});
+
+      window.appAuth = auth;
+      window.appDb = db;
+      window.firebaseMethods = { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, doc, setDoc, getDoc, onSnapshot };
+      window.cloudReady = true;
+
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          window.currentUser = user;
+          document.getElementById('loginScreen').classList.remove('show');
+          document.getElementById('appMain').style.display = 'block';
+          updateUserUI(user);
+          await loadCloudData(user.uid);
+          document.getElementById('syncDot').classList.add('online');
+          document.getElementById('syncText').textContent = 'Cloud OK';
+        } else {
+          window.currentUser = null;
+          if (typeof window.stopCloudSubscription === 'function') window.stopCloudSubscription();
+          document.getElementById('loginScreen').classList.add('show');
+          document.getElementById('appMain').style.display = 'none';
+          document.getElementById('syncDot').classList.remove('online');
+          document.getElementById('syncText').textContent = 'Déconnecté';
+        }
+      });
+    } catch (err) {
+      window.cloudReady = false;
+      document.getElementById('loginScreen').classList.remove('show');
+      document.getElementById('appMain').style.display = 'block';
+      loadLocalData(null);
+      initProfileUI();
+      render();
+    }
+  }
+  window.initFirebase = initFirebase;
+  initFirebase();
+</script>
+</head>
+<body>
+
+<div class="login-screen show" id="loginScreen">
+  <div class="login-box">
+    <h2>📊 Trading Cloud Mobile</h2>
+    <div id="authError" style="display:none;background:rgba(248,113,113,0.12);border:1px solid var(--loss);color:var(--loss);border-radius:8px;padding:8px 10px;margin-bottom:8px;font-size:0.78rem;text-align:left;line-height:1.4;"></div>
+    
+    <div id="loginTab" class="auth-tab">
+      <p style="color:var(--muted);font-size:0.85rem;margin-bottom:12px;">Connexion multi-appareil</p>
+      <input type="email" id="loginEmail" placeholder="Email" autocapitalize="none" required>
+      <input type="password" id="loginPassword" placeholder="Mot de passe" required>
+      <button class="btn-auth" id="loginBtn">🔓 Connexion Cloud</button>
+      <p style="color:var(--muted);font-size:0.8rem;margin-top:14px;">Pas de compte ? <a href="#" onclick="switchTab('signup');return false;">S'inscrire</a></p>
+    </div>
+
+    <div id="signupTab" class="auth-tab" style="display:none;">
+      <p style="color:var(--muted);font-size:0.85rem;margin-bottom:12px;">Créer un compte synchronisé</p>
+      <input type="text" id="signupName" placeholder="Nom complet" required>
+      <input type="email" id="signupEmail" placeholder="Email" autocapitalize="none" required>
+      <input type="password" id="signupPassword" placeholder="Mot de passe (min 6)" required>
+      <button class="btn-auth" id="signupBtn">✅ Créer le compte</button>
+      <p style="color:var(--muted);font-size:0.8rem;margin-top:14px;">Déjà un compte ? <a href="#" onclick="switchTab('login');return false;">Se connecter</a></p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" id="appMain" style="display:none;">
+
+  <div class="top-bar">
+    <h1>Trading Journal Pro</h1>
+    <div class="top-bar-right">
+      <button onclick="toggleTheme()" id="themeToggleBtn" title="Thème">☀️</button>
+      <div class="sync-status">
+        <div class="sync-dot" id="syncDot"></div>
+        <span id="syncText" style="font-size:0.65rem;">Sync</span>
+      </div>
+      <button onclick="manualSync()" title="Rafraîchir">🔄</button>
+      <button onclick="logoutUser()" title="Quitter" style="color:var(--loss);border-color:var(--loss);">🚪</button>
+    </div>
+  </div>
+
+  <div class="user-badge" id="userBadge">
+    <div class="avatar-wrap">
+      <img id="userAvatarImg" class="user-avatar-img" style="display:none;" onclick="openLightbox(profile.photoData)">
+      <div style="width:34px;height:34px;border-radius:50%;background:var(--accent);color:#1A1512;display:flex;align-items:center;justify-content:center;font-weight:bold;cursor:pointer;" id="userAvatar" onclick="openLightbox(profile.photoData)">U</div>
+    </div>
+    <div style="overflow:hidden;">
+      <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="userName">Trader</div>
+      <div style="color:var(--muted);font-size:0.7rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="userEmail">email@test.com</div>
+    </div>
+  </div>
+
+  <div class="profile-card">
+    <div class="profile-photo-row">
+      <div class="avatar-wrap avatar-wrap-lg">
+        <img id="profilePhotoImg" class="profile-avatar-img" style="display:none;" onclick="openLightbox(profile.photoData)">
+        <div class="profile-avatar-fallback" id="profilePhotoFallback" onclick="triggerPhotoInput()">U</div>
+        <label class="avatar-edit" title="Photo">
+          ✏️<input type="file" accept="image/*" id="p-photo-input" style="display:none;" onchange="updateProfilePhoto(event)">
+        </label>
+      </div>
+      <div class="profile-photo-actions">
+        <button type="button" onclick="triggerPhotoInput()">🖼️ Changer la photo</button>
+        <button type="button" id="zoomProfileBtn" style="display:none;" onclick="openLightbox(profile.photoData)">🔍 Zoomer</button>
+      </div>
+    </div>
+    <div class="profile-row">
+      <div class="profile-field">
+        <span>Nom du Trader</span>
+        <input type="text" id="p-name" oninput="updateProfile()">
+      </div>
+      <div class="profile-field">
+        <span>Capital ($)</span>
+        <input type="number" id="p-capital" value="1000" oninput="updateProfile()">
+      </div>
+    </div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <form class="add" id="addForm">
+    <h3 id="formTitle">➕ Nouveau Trade & R/R</h3>
+    <div class="form-grid">
+      <label>Date<input type="date" id="f-date" required></label>
+      <label>Type de Marché<select id="f-market-type" onchange="updateMarketFields()"><option value="forex">Forex</option><option value="crypto">Crypto</option></select></label>
+      <label>Actif<input type="text" id="f-instrument" placeholder="ex: BTC/USDT ou EUR/USD" required></label>
+      <label>Sens<select id="f-direction" onchange="updatePreview()"><option value="long">Long (Buy)</option><option value="short">Short (Sell)</option></select></label>
+      <label>Setup<select id="f-setup"><option value="OB/FVG">OB/FVG</option><option value="BOS/CHOCH">BOS/CHOCH</option><option value="Sweep">Sweep</option><option value="Breakout">Breakout</option></select></label>
+      <label>Plan respecté ?<select id="f-plan"><option value="Oui">Oui</option><option value="Non">Non</option></select></label>
+      <label>Entrée<input type="number" step="any" id="f-entry" placeholder="Prix d'entrée" oninput="updatePreview()" required></label>
+      <label>Stop Loss (SL)<input type="number" step="any" id="f-sl" placeholder="Prix SL" oninput="updatePreview()" required></label>
+      <label>Take Profit (TP)<input type="number" step="any" id="f-exit" placeholder="Prix TP" oninput="updatePreview()" required></label>
+      <label>Risqué ($)<input type="number" step="any" id="f-capital-trade" value="50" required></label>
+      <label id="pips-label">Pips<input type="number" step="any" id="f-pips"></label>
+      <label id="lot-label">Lot<input type="number" step="any" id="f-lot"></label>
+      <label id="leverage-label" style="display:none;">Levier<input type="text" id="f-leverage" value="20x"></label>
+      <label id="dummy-label" style="display:none;"><input type="text" style="visibility:hidden;" readonly></label>
+      <label class="full">Capture / Photo 📷<input type="file" id="f-photo" accept="image/*" onchange="previewTradePhoto(event)"></label>
+      <div class="full trade-photo-preview-wrap" id="tradePhotoPreviewWrap">
+        <img id="tradePhotoPreview" class="trade-photo-preview" src="" onclick="openLightbox(document.getElementById('tradePhotoPreview').src)">
+        <button type="button" class="del" onclick="clearTradePhoto()" style="color:var(--loss);">✖ Retirer la photo</button>
+      </div>
+      <label class="full">Notes d'analyse<textarea id="f-notes" placeholder="Détails..." style="resize:vertical;min-height:70px;"></textarea></label>
+    </div>
+    
+    <div class="preview-box" id="tradePreview">
+      <span>R/R : <strong>0.00 R</strong></span>
+      <span>Neutre</span>
+    </div>
+
+    <div style="display:flex; gap:10px; margin-top:14px; width: 100%;">
+      <button type="submit" class="primary" style="margin-top:0; flex:1;">✅ Enregistrer le Trade</button>
+      <button type="button" id="cancelEditBtn" onclick="cancelEdit()" style="display:none; padding:12px; border-radius:10px; font-weight:bold; background:var(--panel); border:1px solid var(--border); color:var(--text); min-height:48px;">❌</button>
+    </div>
+  </form>
+
+  <div class="filter-bar">
+    <input type="text" id="searchInput" placeholder="🔍 Rechercher actif ou note..." onkeyup="render()">
+    <select id="filterResult" onchange="render()"><option value="">Tous les résultats</option><option value="win">Victoires (Wins)</option><option value="loss">Défaites (Losses)</option></select>
+  </div>
+
+  <div class="mobile-card-container" id="mobileCardContainer"></div>
+  <div id="tableWrap" class="tablewrap"></div>
+</div>
+
+<div class="modal" id="tradeModal">
+  <div class="modal-content">
+    <h3 id="modalTitle">Détails du Trade</h3>
+    <div class="modal-info" id="modalInfo"></div>
+    <div id="modalNotesContainer" style="font-size:0.85rem;margin-bottom:12px;color:var(--muted);"></div>
+    <div id="modalPhotoContainer"></div>
+    <button onclick="closeModal()" class="primary" style="margin-top:16px;">Fermer</button>
+  </div>
+</div>
+
+<div class="lightbox" id="photoLightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✖</button>
+  <img id="lightboxImg" src="" onclick="event.stopPropagation()">
+  <div class="lightbox-hint">Pincer pour zoomer • Double-clic pour réinitialiser</div>
+</div>
+
+<script>
+let trades = [], profile = {name:'Trader', capital:1000};
+let unsubscribeCloud = null;
+let editingTradeId = null;
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme');
+  const next = current === 'light' ? 'dark' : 'light';
+  html.setAttribute('data-theme', next);
+  const btn = document.getElementById('themeToggleBtn');
+  btn.textContent = next === 'light' ? '🌙' : '☀️';
+  localStorage.setItem('TJ_THEME', next);
+}
+
+const savedTheme = localStorage.getItem('TJ_THEME') || 'dark';
+document.documentElement.setAttribute('data-theme', savedTheme);
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('themeToggleBtn');
+  if (btn) btn.textContent = savedTheme === 'light' ? '🌙' : '☀️';
+});
+
+window.stopCloudSubscription = function(){
+  if (unsubscribeCloud) { unsubscribeCloud(); unsubscribeCloud = null; }
+};
+
+function switchTab(tab){
+  document.getElementById('loginTab').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('signupTab').style.display = tab === 'signup' ? 'block' : 'none';
+  clearAuthError();
+}
+
+function showAuthError(msg){
+  const el = document.getElementById('authError');
+  if (el) { el.textContent = msg; el.style.display = 'block'; }
+}
+function clearAuthError(){
+  const el = document.getElementById('authError');
+  if (el) { el.style.display = 'none'; el.textContent = ''; }
+}
+
+function isValidEmail(email){
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+// Traduit les codes d'erreur Firebase en messages clairs en français.
+function friendlyAuthError(err){
+  const code = (err && err.code) || '';
+  const map = {
+    'auth/email-already-in-use': "Cet email a déjà un compte. Essayez plutôt de vous connecter.",
+    'auth/invalid-email': "L'adresse email saisie n'est pas valide.",
+    'auth/weak-password': "Le mot de passe doit contenir au moins 6 caractères.",
+    'auth/wrong-password': "Mot de passe incorrect.",
+    'auth/invalid-credential': "Email ou mot de passe incorrect.",
+    'auth/user-not-found': "Aucun compte ne correspond à cet email.",
+    'auth/too-many-requests': "Trop de tentatives. Patientez quelques minutes puis réessayez.",
+    'auth/network-request-failed': "Pas de connexion internet stable. Vérifiez votre réseau et réessayez.",
+    'auth/operation-not-allowed': "La connexion par email/mot de passe n'est pas activée côté serveur (à activer dans la console Firebase > Authentication).",
+    'auth/unauthorized-domain': "Ce domaine n'est pas autorisé côté Firebase (à ajouter dans Authentication > Settings > Authorized domains).",
+    'auth/api-key-not-valid': "Clé de configuration invalide ou restreinte pour cette app."
+  };
+  return map[code] || ('Erreur : ' + (err && err.message ? err.message : String(err)));
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const signupBtn = document.getElementById('signupBtn');
+  if (signupBtn) {
+    signupBtn.addEventListener('click', async () => {
+      clearAuthError();
+      const name = document.getElementById('signupName').value.trim();
+      const email = document.getElementById('signupEmail').value.trim();
+      const pass = document.getElementById('signupPassword').value;
+      if(!name) { showAuthError('Entrez votre nom complet.'); return; }
+      if(!isValidEmail(email)) { showAuthError('Entrez une adresse email valide (ex: nom@exemple.com).'); return; }
+      if(!pass || pass.length < 6) { showAuthError('Le mot de passe doit contenir au moins 6 caractères.'); return; }
+      if(!window.cloudReady) {
+        showAuthError("Service Cloud indisponible. Nouvelle tentative...");
+        if (typeof window.initFirebase === 'function') { await window.initFirebase().catch(() => {}); }
+        if (!window.cloudReady) { showAuthError("Service Cloud toujours indisponible. Vérifiez votre connexion internet puis réessayez."); return; }
+        clearAuthError();
+      }
+      const btn = signupBtn;
+      const original = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '⏳ Création...';
+      try {
+        await window.firebaseMethods.createUserWithEmailAndPassword(window.appAuth, email, pass);
+        profile.name = name;
+        await saveCloudData();
+      } catch(err) {
+        showAuthError(friendlyAuthError(err));
+      } finally {
+        btn.disabled = false;
+        btn.textContent = original;
+      }
+    });
+  }
+
+  const loginBtn = document.getElementById('loginBtn');
+  if (loginBtn) {
+    loginBtn.addEventListener('click', async () => {
+      clearAuthError();
+      const email = document.getElementById('loginEmail').value.trim();
+      const pass = document.getElementById('loginPassword').value;
+      if(!isValidEmail(email)) { showAuthError('Entrez une adresse email valide.'); return; }
+      if(!pass) { showAuthError('Entrez votre mot de passe.'); return; }
+      if(!window.cloudReady) {
+        showAuthError("Service Cloud indisponible. Nouvelle tentative...");
+        if (typeof window.initFirebase === 'function') { await window.initFirebase().catch(() => {}); }
+        if (!window.cloudReady) { showAuthError("Service Cloud toujours indisponible. Vérifiez votre connexion internet puis réessayez."); return; }
+        clearAuthError();
+      }
+      const btn = loginBtn;
+      const original = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '⏳ Connexion...';
+      try {
+        await window.firebaseMethods.signInWithEmailAndPassword(window.appAuth, email, pass);
+      } catch(err) {
+        showAuthError(friendlyAuthError(err));
+      } finally {
+        btn.disabled = false;
+        btn.textContent = original;
+      }
+    });
+  }
+});
+
+async function logoutUser(){
+  if(confirm("Se déconnecter ?")){
+    if (window.firebaseMethods && window.firebaseMethods.signOut && window.appAuth) {
+      await window.firebaseMethods.signOut(window.appAuth);
+    } else {
+      document.getElementById('loginScreen').classList.add('show');
+      document.getElementById('appMain').style.display = 'none';
+    }
+  }
+}
+
+function updateUserUI(user) {
+  document.getElementById('userAvatar').textContent = (user.email || 'U').charAt(0).toUpperCase();
+  document.getElementById('profilePhotoFallback').textContent = (user.email || 'U').charAt(0).toUpperCase();
+  document.getElementById('userName').textContent = profile.name || 'Trader';
+  document.getElementById('userEmail').textContent = user.email;
+  applyProfilePhotoUI();
+}
+
+function localKey(uid) {
+  return 'TJ_PRO_TRADES_' + (uid || 'guest');
+}
+
+function saveLocalData() {
+  try {
+    localStorage.setItem(localKey(window.currentUser?.uid), JSON.stringify({profile, trades}));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function loadLocalData(uid) {
+  try {
+    const raw = localStorage.getItem(localKey(uid));
+    if (!raw) {
+      profile = {name:'Trader', capital:1000};
+      trades = [];
+      return;
+    }
+    const data = JSON.parse(raw);
+    profile = data.profile || {name:'Trader', capital:1000};
+    trades = Array.isArray(data.trades) ? data.trades : [];
+  } catch (e) {
+    profile = {name:'Trader', capital:1000};
+    trades = [];
+  }
+}
+
+function tradeId(t) {
+  if (t.id) return String(t.id);
+  return [t.date,t.marketType,t.instrument,t.direction,t.entry,t.sl,t.exit].map(v => String(v ?? '')).join('|');
+}
+
+function mergeTrades(cloudTrades, localTrades) {
+  const out = [];
+  const seen = new Set();
+  [...(cloudTrades || []), ...(localTrades || [])].forEach(t => {
+    if (!t.id) {
+      t.id = crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(36).slice(2));
+    }
+    const id = tradeId(t);
+    if (!seen.has(id)) {
+      seen.add(id);
+      out.push(t);
+    }
+  });
+  return out;
+}
+
+async function compressPhoto(dataUrl, maxWidth = 800, quality = 0.6) {
+  if (!dataUrl || !dataUrl.startsWith('data:image/')) return dataUrl || '';
+  try {
+    const img = await new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = reject;
+      image.src = dataUrl;
+    });
+    const scale = Math.min(1, maxWidth / img.width);
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(img.width * scale));
+    canvas.height = Math.max(1, Math.round(img.height * scale));
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL('image/jpeg', quality);
+  } catch (e) {
+    return dataUrl;
+  }
+}
+
+async function prepareCloudTrades(sourceTrades) {
+  const copy = [];
+  for (const t of (sourceTrades || [])) {
+    const c = {...t};
+    if (!c.id) {
+      c.id = crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(36).slice(2));
+    }
+    if (c.photo) c.photo = await compressPhoto(c.photo, 700, 0.5);
+    copy.push(c);
+  }
+  return copy;
+}
+
+async function saveCloudData() {
+  saveLocalData();
+  if (!window.currentUser || !window.cloudReady) return true;
+
+  try {
+    const cloudTrades = await prepareCloudTrades(trades);
+    const docRef = window.firebaseMethods.doc(window.appDb, "users", window.currentUser.uid);
+
+    await window.firebaseMethods.setDoc(docRef, {
+      profile,
+      trades: cloudTrades,
+      updatedAt: new Date().toISOString()
+    }, {merge: true});
+
+    saveLocalData();
+    document.getElementById('syncDot').classList.add('online');
+    document.getElementById('syncText').textContent = 'Cloud OK';
+    return true;
+  } catch(e) {
+    document.getElementById('syncDot').classList.remove('online');
+    document.getElementById('syncText').textContent = 'Local';
+    return false;
+  }
+}
+
+async function loadCloudData(uid) {
+  loadLocalData(uid);
+  initProfileUI();
+  render();
+
+  if (!window.cloudReady) return;
+
+  try {
+    const docRef = window.firebaseMethods.doc(window.appDb, "users", uid);
+    let snap;
+    try {
+      snap = await Promise.race([
+        window.firebaseMethods.getDoc(docRef),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Délai dépassé')), 15000))
+      ]);
+    } catch (e1) {
+      // Réseau mobile lent : on retente une fois avant d'abandonner.
+      snap = await Promise.race([
+        window.firebaseMethods.getDoc(docRef),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Délai dépassé')), 15000))
+      ]);
+    }
+
+    if (snap.exists()) {
+      const data = snap.data();
+      const cloudTrades = Array.isArray(data.trades) ? data.trades : [];
+      const localTrades = trades;
+
+      profile = data.profile || profile;
+      trades = mergeTrades(cloudTrades, localTrades);
+      await saveCloudData();
+    } else {
+      await saveCloudData();
+    }
+
+    initProfileUI();
+    render();
+    subscribeToCloudUpdates(uid);
+  } catch(e) {
+    document.getElementById('syncDot').classList.remove('online');
+    document.getElementById('syncText').textContent = 'Hors-ligne';
+  }
+}
+
+function subscribeToCloudUpdates(uid) {
+  window.stopCloudSubscription();
+  if (!window.cloudReady || !window.firebaseMethods || !window.firebaseMethods.onSnapshot) return;
+  try {
+    const docRef = window.firebaseMethods.doc(window.appDb, "users", uid);
+    unsubscribeCloud = window.firebaseMethods.onSnapshot(docRef, (snap) => {
+      if (!snap.exists() || !window.currentUser) return;
+      const data = snap.data();
+      const cloudTrades = Array.isArray(data.trades) ? data.trades : [];
+      const merged = mergeTrades(cloudTrades, trades);
+      if (merged.length !== trades.length) {
+        trades = merged;
+        saveLocalData();
+        render();
+      }
+    }, () => {});
+  } catch (e) {}
+}
+
+async function manualSync() {
+  if (!window.currentUser) return;
+  document.getElementById('syncText').textContent = 'Sync...';
+  await loadCloudData(window.currentUser.uid);
+}
+
+function initProfileUI() {
+  document.getElementById('p-name').value = profile.name || 'Trader';
+  document.getElementById('p-capital').value = profile.capital || 1000;
+  applyProfilePhotoUI();
+}
+
+function updateProfile() {
+  profile.name = document.getElementById('p-name').value;
+  profile.capital = parseFloat(document.getElementById('p-capital').value) || 1000;
+  saveCloudData();
+  render();
+}
+
+function triggerPhotoInput() {
+  document.getElementById('p-photo-input').click();
+}
+
+async function updateProfilePhoto(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  try {
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result || '');
+      reader.onerror = () => reject(new Error('Erreur de lecture'));
+      reader.readAsDataURL(file);
+    });
+    profile.photoData = await compressPhoto(dataUrl, 500, 0.6);
+    applyProfilePhotoUI();
+    await saveCloudData();
+  } catch (e) {
+    alert('Photo impossible : ' + e.message);
+  } finally {
+    event.target.value = '';
+  }
+}
+
+function applyProfilePhotoUI() {
+  const has = !!(profile && profile.photoData);
+  ['profilePhotoImg', 'userAvatarImg'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.src = has ? profile.photoData : '';
+    el.style.display = has ? 'block' : 'none';
+  });
+  ['profilePhotoFallback', 'userAvatar'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = has ? 'none' : 'flex';
+  });
+  const zoomBtn = document.getElementById('zoomProfileBtn');
+  if (zoomBtn) zoomBtn.style.display = has ? 'inline-block' : 'none';
+}
+
+let lightboxScale = 1;
+function openLightbox(src) {
+  if (!src) return;
+  lightboxScale = 1;
+  const img = document.getElementById('lightboxImg');
+  img.src = src;
+  img.style.transform = 'scale(1)';
+  document.getElementById('photoLightbox').classList.add('show');
+}
+function closeLightbox() {
+  document.getElementById('photoLightbox').classList.remove('show');
+}
+document.addEventListener('wheel', (e) => {
+  const lb = document.getElementById('photoLightbox');
+  if (!lb || !lb.classList.contains('show')) return;
+  e.preventDefault();
+  lightboxScale = Math.min(4, Math.max(1, lightboxScale + (e.deltaY < 0 ? 0.25 : -0.25)));
+  document.getElementById('lightboxImg').style.transform = `scale(${lightboxScale})`;
+}, { passive: false });
+document.addEventListener('DOMContentLoaded', () => {
+  const lbImg = document.getElementById('lightboxImg');
+  if (lbImg) {
+    lbImg.addEventListener('dblclick', () => {
+      lightboxScale = lightboxScale > 1 ? 1 : 2;
+      lbImg.style.transform = `scale(${lightboxScale})`;
+    });
+  }
+});
+
+function previewTradePhoto(event) {
+  const file = event.target.files && event.target.files[0];
+  const wrap = document.getElementById('tradePhotoPreviewWrap');
+  const img = document.getElementById('tradePhotoPreview');
+  if (!file) { wrap.style.display = 'none'; img.src = ''; return; }
+  const reader = new FileReader();
+  reader.onload = () => { img.src = reader.result; wrap.style.display = 'flex'; };
+  reader.readAsDataURL(file);
+}
+function clearTradePhoto() {
+  const input = document.getElementById('f-photo');
+  if (input) input.value = '';
+  document.getElementById('tradePhotoPreviewWrap').style.display = 'none';
+  document.getElementById('tradePhotoPreview').src = '';
+}
+
+function computePnl(t) {
+  if (!t.entry || t.entry === 0) return 0;
+  const change = t.direction === 'short' ? ((t.entry - t.exit) / t.entry) : ((t.exit - t.entry) / t.entry);
+  const levNum = parseFloat(String(t.leverage || '1').replace(/[^0-9.]/g, '')) || 1;
+  return (t.capitalTrade || 0) * levNum * change;
+}
+
+function computeRR(t) {
+  const risk = Math.abs(t.entry - t.sl);
+  if (!risk) return 0;
+  const reward = t.direction === 'short' ? (t.entry - t.exit) : (t.exit - t.entry);
+  return reward / risk;
+}
+
+function updatePreview() {
+  const entry = parseFloat(document.getElementById('f-entry').value) || 0;
+  const sl = parseFloat(document.getElementById('f-sl').value) || 0;
+  const exit = parseFloat(document.getElementById('f-exit').value) || 0;
+  const dir = document.getElementById('f-direction').value;
+  
+  const risk = Math.abs(entry - sl);
+  const reward = dir === 'short' ? (entry - exit) : (exit - entry);
+  const rr = risk > 0 ? (reward / risk).toFixed(2) : '0.00';
+  
+  let status = reward > 0 ? '<span style="color:var(--gain)">Win 📈</span>' : '<span style="color:var(--loss)">Loss 📉</span>';
+  document.getElementById('tradePreview').innerHTML = `<span>R/R : <strong>${rr} R</strong></span> | ${status}`;
+}
+
+function fmt(n) { return (n > 0 ? '+' : '') + n.toFixed(2); }
+function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+function updateMarketFields() {
+  const isForex = document.getElementById('f-market-type').value === 'forex';
+  document.getElementById('pips-label').style.display = isForex ? 'flex' : 'none';
+  document.getElementById('lot-label').style.display = isForex ? 'flex' : 'none';
+  document.getElementById('leverage-label').style.display = isForex ? 'none' : 'flex';
+  document.getElementById('dummy-label').style.display = isForex ? 'none' : 'flex';
+}
+
+function render() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const filter = document.getElementById('filterResult').value;
+  let filtered = trades
+    .filter(t => t.instrument && t.entry !== undefined && t.sl !== undefined && t.exit !== undefined)
+    .filter(t => (!search || t.instrument.toLowerCase().includes(search) || (t.notes && t.notes.toLowerCase().includes(search)))
+      && (!filter || (filter === 'win' ? computePnl(t) > 0 : computePnl(t) < 0)));
+
+  const n = filtered.length, wins = filtered.filter(t => computePnl(t) > 0).length;
+  const pnl = filtered.reduce((s, t) => s + computePnl(t), 0);
+  const gains = filtered.reduce((s, t) => computePnl(t) > 0 ? s + computePnl(t) : s, 0);
+  const losses = Math.abs(filtered.reduce((s, t) => computePnl(t) < 0 ? s + computePnl(t) : s, 0));
+  const pf = losses > 0 ? (gains / losses).toFixed(2) : (gains > 0 ? '∞' : '0.00');
+
+  // Calcul du capital final global (Capital initial du profil + P&L total de tous les trades enregistrés)
+  const totalPnlAll = trades.reduce((s, t) => s + computePnl(t), 0);
+  const initialCapital = parseFloat(profile.capital) || 1000;
+  const finalCapital = initialCapital + totalPnlAll;
+
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><div class="num">${n}</div><div class="label">Trades</div></div>
+    <div class="stat"><div class="num">${n ? Math.round((wins/n)*100) : 0}%</div><div class="label">Win Rate</div></div>
+    <div class="stat"><div class="num ${pnl >= 0 ? 'gain' : 'loss'}">${fmt(pnl)}$</div><div class="label">P&L</div></div>
+    <div class="stat"><div class="num">${pf}</div><div class="label">Profit Factor</div></div>
+    <div class="stat" style="grid-column: span 2;"><div class="num ${finalCapital >= initialCapital ? 'gain' : 'loss'}">${finalCapital.toFixed(2)}$</div><div class="label">Capital Final</div></div>
+  `;
+
+  let mobileHtml = '';
+  if (filtered.length === 0) {
+    mobileHtml = `<div class="empty">Aucun trade enregistré</div>`;
+  } else {
+    filtered.forEach(t => {
+      const p = computePnl(t);
+      const rr = computeRR(t);
+      const safeId = esc(t.id);
+      const isLong = t.direction === 'long';
+      mobileHtml += `
+        <div class="trade-card">
+          <div class="trade-card-header">
+            <span class="trade-card-instrument" onclick="openModal('${safeId}')">${esc(t.instrument)}</span>
+            <span class="trade-card-badge ${isLong ? 'badge-long' : 'badge-short'}">${esc(t.direction.toUpperCase())}</span>
+          </div>
+          <div class="trade-card-body">
+            <span>Date : <strong>${esc(t.date)}</strong></span>
+            <span>Setup : <strong>${esc(t.setup || '-')}</strong></span>
+            <span>Entrée : <strong>${t.entry}</strong></span>
+            <span>R/R : <strong>${rr.toFixed(2)}R</strong></span>
+          </div>
+          <div class="trade-card-footer">
+            <div class="trade-card-pnl ${p >= 0 ? 'gain' : 'loss'}">${fmt(p)}$</div>
+            <div class="trade-card-actions">
+              ${t.photo ? `<button class="del" onclick="openModal('${safeId}')" title="Photo">📷</button>` : ''}
+              <button class="del" onclick="openModal('${safeId}')" title="Détails">👁️</button>
+              <button class="del edit-btn" onclick="editTrade('${safeId}')" title="Modifier">✏️</button>
+              <button class="del" onclick="deleteTrade('${safeId}')" title="Supprimer" style="color:var(--loss);">🗑️</button>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+  }
+  document.getElementById('mobileCardContainer').innerHTML = mobileHtml;
+}
+
+function openModal(id) {
+  const t = trades.find(item => String(item.id) === String(id));
+  if(!t) return;
+  document.getElementById('modalTitle').textContent = `Trade : ${t.instrument} (${t.direction.toUpperCase()})`;
+  document.getElementById('modalInfo').innerHTML = `
+    <div><strong>Date :</strong> ${esc(t.date)}</div>
+    <div><strong>Marché :</strong> ${esc(t.marketType)}</div>
+    <div><strong>Setup :</strong> ${esc(t.setup)}</div>
+    <div><strong>Risqué :</strong> ${t.capitalTrade || 0} $</div>
+    <div><strong>Levier :</strong> ${esc(t.leverage || '1x')}</div>
+    <div><strong>Plan OK :</strong> ${esc(t.plan)}</div>
+    <div><strong>Entrée :</strong> ${t.entry}</div>
+    <div><strong>Stop Loss :</strong> ${t.sl}</div>
+    <div><strong>Take Profit :</strong> ${t.exit}</div>
+    <div><strong>P&L :</strong> ${fmt(computePnl(t))}$</div>
+  `;
+  document.getElementById('modalNotesContainer').innerHTML = t.notes ? `<strong>Notes :</strong> ${esc(t.notes)}` : '';
+  document.getElementById('modalPhotoContainer').innerHTML = t.photo ? `<img src="${t.photo}" class="modal-img" title="Zoom">` : '<p style="color:var(--muted);font-size:0.8rem;">Aucune photo jointe.</p>';
+  const modalImg = document.querySelector('#modalPhotoContainer img');
+  if (modalImg) modalImg.onclick = () => openLightbox(t.photo);
+  document.getElementById('tradeModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('tradeModal').classList.remove('show');
+}
+
+window.editTrade = function(id) {
+  const t = trades.find(item => String(item.id) === String(id));
+  if(!t) return;
+  
+  editingTradeId = t.id;
+  
+  document.getElementById('f-date').value = t.date || '';
+  document.getElementById('f-market-type').value = t.marketType || 'forex';
+  updateMarketFields();
+  document.getElementById('f-instrument').value = t.instrument || '';
+  document.getElementById('f-direction').value = t.direction || 'long';
+  document.getElementById('f-setup').value = t.setup || 'OB/FVG';
+  document.getElementById('f-plan').value = t.plan || 'Oui';
+  document.getElementById('f-entry').value = t.entry || '';
+  document.getElementById('f-sl').value = t.sl || '';
+  document.getElementById('f-exit').value = t.exit || '';
+  document.getElementById('f-capital-trade').value = t.capitalTrade || 50;
+  document.getElementById('f-pips').value = t.pips || '';
+  document.getElementById('f-lot').value = t.lot || '';
+  document.getElementById('f-leverage').value = t.leverage || '20x';
+  document.getElementById('f-notes').value = t.notes || '';
+  
+  if(t.photo) {
+    document.getElementById('tradePhotoPreview').src = t.photo;
+    document.getElementById('tradePhotoPreviewWrap').style.display = 'flex';
+  } else {
+    clearTradePhoto();
+  }
+  
+  updatePreview();
+  
+  document.querySelector('#addForm button[type="submit"]').textContent = '💾 Mettre à jour';
+  document.getElementById('formTitle').textContent = '✏️ Modifier le Trade';
+  document.getElementById('cancelEditBtn').style.display = 'inline-flex';
+  
+  document.getElementById('addForm').scrollIntoView({behavior: 'smooth'});
+};
+
+window.cancelEdit = function() {
+  editingTradeId = null;
+  addForm.reset();
+  clearTradePhoto();
+  document.getElementById('f-date').valueAsDate = new Date();
+  document.getElementById('f-capital-trade').value = 50;
+  document.getElementById('f-leverage').value = '20x';
+  document.getElementById('f-market-type').value = 'forex';
+  updateMarketFields();
+  updatePreview();
+  
+  document.querySelector('#addForm button[type="submit"]').textContent = '✅ Enregistrer le Trade';
+  document.getElementById('formTitle').textContent = '➕ Nouveau Trade & R/R';
+  document.getElementById('cancelEditBtn').style.display = 'none';
+};
+
+window.deleteTrade = async function(id) {
+  if(confirm("Confirmer la suppression de ce trade ?")){
+    trades = trades.filter(item => String(item.id) !== String(id));
+    saveLocalData();
+    render();
+    try { await saveCloudData(); } catch(e) {}
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  const dateInput = document.getElementById('f-date');
+  if (dateInput && !dateInput.value) {
+    dateInput.valueAsDate = new Date();
+  }
+  updateMarketFields();
+  updatePreview();
+});
+
+const addForm = document.getElementById('addForm');
+if (addForm) {
+  addForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const submitBtn = addForm.querySelector('button[type="submit"]');
+    const photoInput = document.getElementById('f-photo');
+
+    if (submitBtn && submitBtn.disabled) return;
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = editingTradeId ? '⏳ Mise à jour...' : '⏳ Enregistrement...';
+    }
+
+    try {
+      const photoData = await new Promise((resolve, reject) => {
+        if (!photoInput || !photoInput.files || !photoInput.files[0]) {
+          if (editingTradeId) {
+            const oldT = trades.find(item => String(item.id) === String(editingTradeId));
+            if (oldT && oldT.photo && document.getElementById('tradePhotoPreviewWrap').style.display !== 'none') {
+              resolve(oldT.photo);
+              return;
+            }
+          }
+          resolve('');
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result || '');
+        reader.onerror = () => reject(new Error('Erreur de lecture photo'));
+        reader.readAsDataURL(photoInput.files[0]);
+      });
+
+      const trade = {
+        date: document.getElementById('f-date').value,
+        marketType: document.getElementById('f-market-type').value,
+        instrument: document.getElementById('f-instrument').value.trim().toUpperCase(),
+        direction: document.getElementById('f-direction').value,
+        setup: document.getElementById('f-setup').value,
+        capitalTrade: parseFloat(document.getElementById('f-capital-trade').value) || 1,
+        leverage: document.getElementById('f-leverage').value.trim() || '1x',
+        pips: parseFloat(document.getElementById('f-pips').value) || 0,
+        lot: parseFloat(document.getElementById('f-lot').value) || 0,
+        entry: parseFloat(document.getElementById('f-entry').value),
+        sl: parseFloat(document.getElementById('f-sl').value),
+        exit: parseFloat(document.getElementById('f-exit').value),
+        plan: document.getElementById('f-plan').value,
+        notes: document.getElementById('f-notes').value.trim(),
+        photo: photoData
+      };
+
+      if (editingTradeId) {
+        trade.id = editingTradeId;
+        const idx = trades.findIndex(item => String(item.id) === String(editingTradeId));
+        if(idx !== -1) { trades[idx] = trade; } else { trades.unshift(trade); }
+      } else {
+        trade.id = (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2));
+        trades.unshift(trade);
+      }
+      
+      saveLocalData();
+      render();
+
+      if (editingTradeId) {
+        window.cancelEdit();
+      } else {
+        addForm.reset();
+        clearTradePhoto();
+        document.getElementById('f-date').valueAsDate = new Date();
+        document.getElementById('f-capital-trade').value = 50;
+        document.getElementById('f-leverage').value = '20x';
+        document.getElementById('f-market-type').value = 'forex';
+        updateMarketFields();
+        updatePreview();
+      }
+
+      try { await saveCloudData(); } catch (err) {}
+
+    } catch (error) {
+      alert('Erreur : ' + error.message);
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = editingTradeId ? '💾 Mettre à jour' : '✅ Enregistrer le Trade';
+      }
+    }
+  });
+}
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js', { updateViaCache: 'none' })
+      .then((reg) => reg.update().catch(() => {}))
+      .catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
